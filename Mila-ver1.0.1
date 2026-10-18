@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070b16">
+<title>ChipCompare — Compare Chips. Know Your Power.</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Crect x='6' y='6' width='14' height='14' rx='3' fill='none' stroke='%235cc8ff' stroke-width='2'/%3E%3Crect x='10' y='10' width='6' height='6' rx='1.5' fill='%238b7bff'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#070b16;--tx:#f2f6ff;--mu:#93a1ba;--ac:#5cc8ff;--v:#8b7bff;--g:#4fd08a;--gl:rgba(24,34,58,.55);--bd:rgba(160,190,255,.16)}
+:root[data-theme=light]{--bg:#eef2fa;--tx:#0d1526;--mu:#4c5b78;--gl:rgba(255,255,255,.7);--bd:rgba(30,50,90,.15)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;font:15px/1.55 Inter,"Noto Sans Thai",system-ui,sans-serif;color:var(--tx);background:radial-gradient(900px 500px at 15% -10%,rgba(139,123,255,.18),transparent),radial-gradient(900px 500px at 90% 0,rgba(92,200,255,.14),transparent),var(--bg);min-height:100vh;padding-bottom:90px}
+a{color:var(--ac);text-decoration:none}
+.wrap{max-width:1120px;margin:auto;padding:0 18px}
+.glass{background:var(--gl);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--bd);border-radius:18px;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 12px 40px rgba(0,0,0,.25)}
+nav{position:sticky;top:0;z-index:20;margin:10px auto;display:flex;align-items:center;gap:6px;padding:10px 16px;flex-wrap:wrap}
+nav .logo{font-weight:700;font-size:18px;color:var(--tx);display:flex;gap:8px;align-items:center;margin-right:auto}
+nav a.l{color:var(--mu);padding:6px 10px;border-radius:10px}nav a.l:hover,nav a.on{color:var(--tx);background:rgba(120,160,255,.12)}
+button,select,input,textarea{font:inherit;color:var(--tx)}
+.btn{background:linear-gradient(135deg,var(--ac),var(--v));color:#06101f;border:0;border-radius:12px;padding:9px 16px;font-weight:600;cursor:pointer}
+.btn.s{background:transparent;color:var(--tx);border:1px solid var(--bd)}
+.btn:hover{filter:brightness(1.1)}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+input,select,textarea{background:rgba(0,0,0,.22);border:1px solid var(--bd);border-radius:12px;padding:9px 12px}
+:root[data-theme=light] input,:root[data-theme=light] select,:root[data-theme=light] textarea{background:#fff}
+h1{font-size:clamp(34px,6vw,60px);line-height:1.08;margin:50px 0 12px;letter-spacing:-.02em}
+h1 span{background:linear-gradient(90deg,var(--ac),var(--v));-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{margin:28px 0 12px}.mu{color:var(--mu)}.sm{font-size:13px}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.card{padding:16px}.card h3{margin:2px 0 6px;font-size:16px}
+.tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;border:1px solid var(--bd);color:var(--mu);margin-right:4px}
+.tag.ok{color:var(--g);border-color:rgba(79,208,138,.4)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.search{position:relative;max-width:640px}.search input{width:100%;padding:15px 18px;font-size:17px;border-radius:16px}
+.sug{position:absolute;left:0;right:0;top:100%;margin:6px 0 0;padding:6px;list-style:none;z-index:15}
+.sug li{padding:9px 12px;border-radius:10px;cursor:pointer}.sug li[aria-selected=true],.sug li:hover{background:rgba(120,160,255,.18)}
+table{width:100%;border-collapse:collapse}th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--mu);font-weight:600;font-size:13px}.scroll{overflow-x:auto}
+.bar{height:10px;border-radius:9px;background:rgba(120,160,255,.12);overflow:hidden;margin:4px 0}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--v),var(--ac));border-radius:9px;transition:width .5s}
+.bar.w i{background:linear-gradient(90deg,#2fae6c,var(--g))}
+.win{color:var(--g);font-weight:600}
+#tray{position:fixed;left:50%;transform:translateX(-50%);bottom:14px;z-index:30;padding:10px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;max-width:94vw}
+.chip{background:rgba(120,160,255,.15);border-radius:99px;padding:3px 6px 3px 12px;font-size:13px}
+.chip button{background:none;border:0;cursor:pointer;color:var(--mu)}
+.note{border-left:3px solid var(--v);padding:10px 14px;margin:12px 0;background:rgba(139,123,255,.08);border-radius:0 12px 12px 0}
+[title]{cursor:help;border-bottom:1px dotted var(--mu)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto}}
+@media(max-width:600px){nav a.l{padding:5px 7px;font-size:14px}}
+html[lang=th] body{font-family:"Noto Sans Thai",Inter,system-ui,sans-serif}
+.pr{margin:12px 0}.pn{font-size:14px;margin-bottom:4px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pb{position:relative;height:30px;border-radius:12px;background:rgba(120,160,255,.1);overflow:hidden;border:1px solid var(--bd)}
+.pb i{position:absolute;inset:0 auto 0 0;border-radius:12px;background:linear-gradient(90deg,color-mix(in srgb,var(--c) 40%,transparent),var(--c));box-shadow:0 0 18px -4px var(--c);transition:width 1s cubic-bezier(.2,.8,.2,1)}
+.pb i::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.35) 50%,transparent 70%);transform:translateX(-100%);animation:sh 2.8s ease-in-out 1s infinite}
+.pb b{position:absolute;right:10px;top:0;line-height:28px;font-size:13px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+@keyframes sh{to{transform:translateX(100%)}}
+.rings{display:flex;gap:22px;flex-wrap:wrap;margin-top:14px}.rg{text-align:center}
+.ring{width:96px;height:96px;border-radius:50%;background:conic-gradient(var(--c) calc(var(--p)*1%),rgba(120,160,255,.14) 0);display:grid;place-items:center;margin:auto 0 6px;position:relative}
+.ring::before{content:"";position:absolute;inset:9px;border-radius:50%;background:var(--bg)}
+.ring span{position:relative;font-weight:700;font-size:22px}
+.tag.dm{color:#ffb454;border-color:rgba(255,180,84,.45)}
+#stars{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+main{position:relative}html{-webkit-text-size-adjust:100%}*{-webkit-tap-highlight-color:transparent}body{overflow-x:hidden}
+input,select,textarea{font-size:16px}
+@keyframes up{from{opacity:0;transform:translateY(10px)}}@keyframes gs{to{background-position:200% 0}}
+#app>*{position:relative;animation:up .45s cubic-bezier(.2,.8,.2,1) backwards}#app>*:focus-within{z-index:40}
+h1 span{background-size:200% 100%;animation:gs 7s linear infinite}
+h2{display:flex;align-items:center;gap:10px}h2::before{content:"";width:4px;height:1em;border-radius:4px;background:linear-gradient(var(--ac),var(--v))}
+.grid>.card{content-visibility:auto;contain-intrinsic-size:auto 150px;transition:transform .25s,border-color .25s,box-shadow .25s}
+.grid>.card:hover{transform:translateY(-3px);border-color:rgba(92,200,255,.5);box-shadow:0 18px 40px -16px rgba(92,200,255,.35)}
+.btn{transition:transform .15s,filter .2s,box-shadow .2s}.btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px -10px var(--ac)}
+.stat{padding:10px 18px;text-align:center}.stat b{display:block;font-size:24px;background:linear-gradient(90deg,var(--ac),var(--v));-webkit-background-clip:text;background-clip:text;color:transparent}
+.nsearch{position:relative;flex:1 1 220px;max-width:340px}.links{display:flex;gap:2px}.links a{white-space:nowrap}
+.sug li small{color:var(--mu)}
+@media(max-width:700px){body{font-size:14.5px;padding-bottom:120px}.wrap{padding:0 12px}h1{margin-top:26px}.grid{grid-template-columns:1fr}
+.glass{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}nav{margin:6px 8px;padding:8px 10px;border-radius:14px}
+.logo{order:1}#lang,#theme{order:2;padding:7px 11px}.nsearch{order:3;flex:1 1 100%;max-width:none}.links{order:4;flex:1 1 100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.links a,.btn{min-height:40px;display:inline-flex;align-items:center}
+#tray{left:8px;right:8px;transform:none;bottom:calc(8px + env(safe-area-inset-bottom));max-width:none;justify-content:center}
+th,td{padding:8px}.row>input,.row>select{flex:1 1 140px}.pb b{font-size:12px}.rings{gap:14px}}
+.sug{z-index:60;background:rgba(12,20,40,.97);max-height:60vh;overflow:auto}
+:root[data-theme=light]{--bg:#f3f6ff;--tx:#0f1a33;--mu:#566690;--gl:rgba(255,255,255,.74);--bd:rgba(70,100,170,.18);--ac:#2563eb;--v:#7a5af8;--g:#12915a}
+:root[data-theme=light] body{background:radial-gradient(900px 520px at 8% -8%,rgba(122,90,248,.17),transparent),radial-gradient(900px 520px at 96% 0,rgba(37,99,235,.15),transparent),radial-gradient(800px 460px at 50% 112%,rgba(255,150,190,.2),transparent),#f3f6ff}
+:root[data-theme=light] .glass{box-shadow:inset 0 1px 0 #fff,0 14px 36px -16px rgba(40,70,150,.28)}
+:root[data-theme=light] .btn{color:#fff}:root[data-theme=light] .btn.s{color:var(--tx)}
+:root[data-theme=light] .sug{background:rgba(255,255,255,.98);box-shadow:0 18px 40px -14px rgba(40,70,150,.35)}
+:root[data-theme=light] .sug li[aria-selected=true],:root[data-theme=light] .sug li:hover{background:rgba(37,99,235,.1)}
+:root[data-theme=light] .pb{background:rgba(70,100,170,.1)}
+:root[data-theme=light] .pb b{color:var(--tx);text-shadow:0 0 5px #fff,0 0 2px #fff}
+:root[data-theme=light] .ring::before{background:#f7f9ff}
+:root[data-theme=light] nav a.l:hover,:root[data-theme=light] nav a.on{background:rgba(37,99,235,.1)}
+:root[data-theme=light] .note{background:rgba(122,90,248,.08)}
+:root[data-theme=light] .tag.dm{color:#b45309;border-color:rgba(180,83,9,.4)}
+:root[data-theme=light] .grid>.card:hover{box-shadow:0 18px 40px -16px rgba(37,99,235,.35)}
+
+/* ===== v2 modern layer ===== */
+:root{--pop:rgba(13,21,42,.98);--r:22px}
+:root[data-theme=light]{--pop:rgba(255,255,255,.99)}
+body{font-feature-settings:"cv11","ss01";-webkit-font-smoothing:antialiased}
+.glass{border-radius:var(--r)}
+nav.glass{border-radius:999px;padding:8px 10px 8px 18px;top:12px;margin-top:12px}
+nav a.l{border-radius:999px;padding:7px 14px;font-weight:500;transition:background .2s,color .2s}
+nav a.on{background:linear-gradient(135deg,color-mix(in srgb,var(--ac) 22%,transparent),color-mix(in srgb,var(--v) 22%,transparent));color:var(--tx)}
+.btn{border-radius:999px;padding:10px 20px;box-shadow:0 6px 18px -8px color-mix(in srgb,var(--ac) 70%,transparent)}
+.btn.s{box-shadow:none;background:color-mix(in srgb,var(--gl) 80%,transparent)}
+#lang,#theme{padding:8px 14px}
+h1{font-weight:800;letter-spacing:-.035em;font-size:clamp(38px,7vw,72px);line-height:1.02}
+.eyebrow{display:inline-flex;gap:8px;align-items:center;margin-top:44px;padding:6px 14px;border-radius:999px;border:1px solid var(--bd);background:var(--gl);font-size:13px;font-weight:500;color:var(--mu)}
+.eyebrow i{width:8px;height:8px;border-radius:50%;background:var(--g);box-shadow:0 0 0 4px color-mix(in srgb,var(--g) 25%,transparent)}
+.eyebrow+h1{margin-top:16px}
+h2{font-weight:700;letter-spacing:-.02em;font-size:22px}
+select,input,textarea{border-radius:14px;padding:10px 14px;transition:border-color .2s,box-shadow .2s,background .2s}
+input:focus,select:focus,textarea:focus{outline:0;border-color:var(--ac);box-shadow:0 0 0 4px color-mix(in srgb,var(--ac) 22%,transparent)}
+select{appearance:none;-webkit-appearance:none;cursor:pointer;padding-right:36px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%2393a1ba' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+select option{background:#0e1730;color:#f2f6ff}
+:root[data-theme=light] select option{background:#fff;color:#0f1a33}
+.search input,.nsearch input{padding-left:42px;background-repeat:no-repeat;background-position:15px center;background-size:17px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%2393a1ba' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-3.5-3.5'/%3E%3C/svg%3E")}
+.search input{padding-top:16px;padding-bottom:16px;border-radius:18px;box-shadow:0 18px 50px -24px color-mix(in srgb,var(--ac) 60%,transparent)}
+
+/* dropdown list */
+.sug{border-radius:20px;padding:8px;background:var(--pop);border:1px solid var(--bd);box-shadow:0 34px 80px -24px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.03) inset;backdrop-filter:blur(26px);-webkit-backdrop-filter:blur(26px);max-height:min(62vh,440px);overscroll-behavior:contain;animation:pop .16s ease-out}
+:root[data-theme=light] .sug{background:var(--pop);box-shadow:0 30px 70px -26px rgba(40,70,150,.4)}
+@keyframes pop{from{opacity:0;transform:translateY(-6px) scale(.985)}}
+.sug li{display:grid;grid-template-columns:36px 1fr auto;column-gap:12px;row-gap:1px;align-items:center;padding:8px 10px;margin:1px 0;border-radius:14px;transition:background .12s}
+.sug li[role=option][aria-selected=true],.sug li[role=option]:hover{background:linear-gradient(90deg,color-mix(in srgb,var(--ac) 18%,transparent),color-mix(in srgb,var(--v) 12%,transparent))}
+.sug li[aria-selected=true]{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ac) 45%,transparent)}
+.sug .av{grid-row:1/3}
+.sug .nm{grid-column:2;font-weight:600;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sug .mt{grid-column:2;font-size:12px;color:var(--mu);line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sug .ct{grid-column:3;grid-row:1/3;font-size:11px;font-weight:500;padding:3px 10px;border-radius:99px;background:rgba(120,160,255,.13);color:var(--mu)}
+.sug mark{background:none;color:var(--ac);font-weight:700}
+.sug li.hint{display:block;cursor:default;font-size:12px;color:var(--mu);padding:9px 10px 4px;margin-top:6px;border-top:1px solid var(--bd);border-radius:0;background:none!important;box-shadow:none!important}
+.sug li.hint.empty{border:0;margin:0;padding:14px 10px;text-align:center}
+.av{display:grid;place-items:center;width:36px;height:36px;border-radius:11px;font-weight:700;font-size:15px;color:#fff;flex:none;background:linear-gradient(145deg,var(--b,#5b6b8c),color-mix(in srgb,var(--b,#5b6b8c) 55%,#000));box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
+
+/* cards */
+.card{padding:18px}
+.grid{gap:16px}
+.grid>.card{position:relative;overflow:hidden;display:flex;flex-direction:column;gap:6px}
+.grid>.card::after{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;background:linear-gradient(135deg,transparent 35%,color-mix(in srgb,var(--ac) 70%,transparent),color-mix(in srgb,var(--v) 70%,transparent),transparent 75%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;opacity:0;transition:opacity .3s;pointer-events:none}
+.grid>.card:hover::after{opacity:1}
+.ch{display:flex;gap:12px;align-items:center}.ch h3{margin:0;font-size:16px;line-height:1.25}.ch h3 a{color:var(--tx)}
+.sc{font-size:24px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;background:linear-gradient(90deg,var(--ac),var(--v));-webkit-background-clip:text;background-clip:text;color:transparent;margin-top:4px}
+.sc small{font-size:12px;font-weight:500;letter-spacing:0;-webkit-text-fill-color:var(--mu)}
+.card label.sm{margin-top:auto!important;padding-top:8px}
+input[type=checkbox]{appearance:none;-webkit-appearance:none;width:20px;height:20px;padding:0;border-radius:7px;border:1.5px solid var(--bd);background:transparent;display:inline-grid;place-items:center;cursor:pointer;transition:.15s}
+input[type=checkbox]:checked{background:linear-gradient(135deg,var(--ac),var(--v));border-color:transparent}
+input[type=checkbox]:checked::after{content:"";width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.stat{border-radius:18px;padding:12px 22px}
+.stat b{font-size:28px;font-weight:800;letter-spacing:-.03em}
+.tag{font-weight:500;padding:3px 10px;background:color-mix(in srgb,var(--gl) 70%,transparent)}
+table{font-variant-numeric:tabular-nums}
+tr:hover td{background:rgba(120,160,255,.05)}
+.note{border-radius:0 14px 14px 0}
+.rk{display:inline-grid;place-items:center;min-width:24px;height:24px;border-radius:8px;background:rgba(120,160,255,.14);font-size:12px;font-weight:700;margin-right:8px}
+.rk.t1{background:linear-gradient(135deg,#ffd45c,#ff9f43);color:#3b2400}.rk.t2{background:linear-gradient(135deg,#e6edf7,#aab6c8);color:#1c2635}.rk.t3{background:linear-gradient(135deg,#f1b58a,#c8793f);color:#2d1500}
+
+/* tray */
+#tray{border-radius:999px;padding:8px 10px 8px 14px;box-shadow:0 24px 60px -16px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.08);gap:8px}
+#tray .cnt{font-size:12px;font-weight:700;padding:3px 9px;border-radius:99px;background:linear-gradient(135deg,var(--ac),var(--v));color:#06101f}
+:root[data-theme=light] #tray .cnt{color:#fff}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:4px 6px 4px 12px;font-weight:500}
+.chip button{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;line-height:1;font-size:11px;transition:background .15s,color .15s}
+.chip button:hover{background:rgba(255,90,90,.2);color:#ff7b7b}
+@media(max-width:700px){nav.glass{border-radius:24px}#tray{border-radius:22px}.sug li{grid-template-columns:36px 1fr}.sug .ct{display:none}.eyebrow{margin-top:24px}}
+[hidden]{display:none!important}
+.tiles{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+.tile{padding:16px 18px}.tile .big{font-size:32px;margin-top:10px}
+.pb b{white-space:nowrap}
+</style></head><body>
+<canvas id="stars" aria-hidden="true"></canvas>
+<nav class="glass wrap" aria-label="Main">
+<a class="logo" href="#/"><svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><rect x="6" y="6" width="14" height="14" rx="3" fill="none" stroke="#5cc8ff" stroke-width="2"/><rect x="10" y="10" width="6" height="6" rx="1.5" fill="#8b7bff"/><path d="M9 2v4M13 2v4M17 2v4M9 20v4M13 20v4M17 20v4M2 9h4M2 13h4M2 17h4M20 9h4M20 13h4M20 17h4" stroke="#5cc8ff" stroke-width="1.5"/></svg>ChipCompare</a>
+<div class="nsearch"><input id="nq" placeholder="Search chips…" aria-label="Search chips" aria-expanded="false" style="width:100%;padding:8px 14px 8px 40px"><ul id="nsug" class="sug glass" role="listbox" hidden></ul></div><div class="links"><a class="l" href="#/explorer">Explorer</a><a class="l" href="#/compare">Compare</a><a class="l" href="#/bench">AnTuTu</a><a class="l" href="#/games">Gaming</a></div>
+<button class="btn s" id="lang" aria-label="Switch language"></button><button class="btn s" id="theme" aria-label="Toggle light or dark theme">◐</button></nav>
+<main class="wrap" id="app" aria-live="polite"></main>
+<div id="tray" class="glass" hidden></div>
+<script>
+"use strict";
+addEventListener("error",e=>{const a=document.getElementById("app");if(a)a.innerHTML='<div class="note">ChipCompare hit a script error: '+String(e.message).replace(/</g,"&lt;")+' (line '+e.lineno+'). Open the browser console (F12) for details.</div>'});
+/* ---- Data model: add chips here (or load via Data page for benchmarks). Specs below are public manufacturer figures; null = not listed. ---- */
+const CHIPS=[
+{id:"apple-m3",mfr:"Apple",cat:"laptop",name:"Apple M3",year:2023,proc:"3 nm",cores:"8 (4P+4E)",tdp:null},
+{id:"apple-m2",mfr:"Apple",cat:"laptop",name:"Apple M2",year:2022,proc:"5 nm",cores:"8 (4P+4E)",tdp:null},
+{id:"apple-a17-pro",mfr:"Apple",cat:"mobile",name:"Apple A17 Pro",year:2023,proc:"3 nm",cores:"6 (2P+4E)",tdp:null},
+{id:"sd-8-gen-3",mfr:"Qualcomm",cat:"mobile",name:"Snapdragon 8 Gen 3",year:2023,proc:"4 nm",cores:"8 (1+5+2)",tdp:null},
+{id:"sd-8-gen-2",mfr:"Qualcomm",cat:"mobile",name:"Snapdragon 8 Gen 2",year:2022,proc:"4 nm",cores:"8 (1+4+3)",tdp:null},
+{id:"dim-9300",mfr:"MediaTek",cat:"mobile",name:"Dimensity 9300",year:2023,proc:"4 nm",cores:"8 (4+4)",tdp:null},
+{id:"exynos-2400",mfr:"Samsung",cat:"mobile",name:"Exynos 2400",year:2024,proc:"4 nm",cores:"10 (1+2+3+4)",tdp:null},
+{id:"tensor-g3",mfr:"Google",cat:"mobile",name:"Google Tensor G3",year:2023,proc:"4 nm",cores:"9 (1+4+4)",tdp:null},
+{id:"r7-7800x3d",mfr:"AMD",cat:"desktop",name:"Ryzen 7 7800X3D",year:2023,proc:"5 nm",cores:"8C / 16T",clock:"4.2 / 5.0 GHz",cache:"96 MB L3",tdp:120},
+{id:"r9-7950x",mfr:"AMD",cat:"desktop",name:"Ryzen 9 7950X",year:2022,proc:"5 nm",cores:"16C / 32T",clock:"4.5 / 5.7 GHz",cache:"64 MB L3",tdp:170},
+{id:"r5-7600x",mfr:"AMD",cat:"desktop",name:"Ryzen 5 7600X",year:2022,proc:"5 nm",cores:"6C / 12T",clock:"4.7 / 5.3 GHz",cache:"32 MB L3",tdp:105},
+{id:"i9-14900k",mfr:"Intel",cat:"desktop",name:"Core i9-14900K",year:2023,proc:"Intel 7",cores:"24 (8P+16E) / 32T",clock:"3.2 / 6.0 GHz",cache:"36 MB L3",tdp:125},
+{id:"i5-13600k",mfr:"Intel",cat:"desktop",name:"Core i5-13600K",year:2022,proc:"Intel 7",cores:"14 (6P+8E) / 20T",clock:"3.5 / 5.1 GHz",cache:"24 MB L3",tdp:125},
+{id:"ultra-7-155h",mfr:"Intel",cat:"laptop",name:"Core Ultra 7 155H",year:2023,proc:"Intel 4",cores:"16 (6P+8E+2LP)",tdp:28},
+{id:"rtx-4090",mfr:"NVIDIA",cat:"gpu",name:"GeForce RTX 4090",year:2022,proc:"TSMC 4N",arch:"Ada Lovelace",cores:"16384 CUDA",mem:"24 GB GDDR6X",tdp:450},
+{id:"rtx-4070",mfr:"NVIDIA",cat:"gpu",name:"GeForce RTX 4070",year:2023,proc:"TSMC 4N",arch:"Ada Lovelace",cores:"5888 CUDA",mem:"12 GB GDDR6X",tdp:200},
+{id:"rtx-3060",mfr:"NVIDIA",cat:"gpu",name:"GeForce RTX 3060",year:2021,proc:"Samsung 8 nm",arch:"Ampere",cores:"3584 CUDA",mem:"12 GB GDDR6",tdp:170},
+{id:"rx-7800xt",mfr:"AMD",cat:"gpu",name:"Radeon RX 7800 XT",year:2023,proc:"TSMC 5/6 nm",arch:"RDNA 3",cores:"3840 SP",mem:"16 GB GDDR6",tdp:263},
+{id:"arc-a770",mfr:"Intel",cat:"gpu",name:"Arc A770",year:2022,proc:"TSMC 6 nm",arch:"Alchemist",cores:"32 Xe cores",mem:"16 GB GDDR6",tdp:225}];
+const mk=(id,mfr,cat,name,year,proc,cores,x={})=>CHIPS.push({id,mfr,cat,name,year,proc,cores,...x});
+mk("apple-a16","Apple","mobile","Apple A16 Bionic",2022,"4 nm","6 (2P+4E)");mk("apple-a15","Apple","mobile","Apple A15 Bionic",2021,"5 nm","6 (2P+4E)");
+mk("sd-8-elite","Qualcomm","mobile","Snapdragon 8 Elite",2024,"3 nm","8 (2+6)");mk("sd-8-gen-1","Qualcomm","mobile","Snapdragon 8 Gen 1",2021,"4 nm","8 (1+3+4)");
+mk("dim-9400","MediaTek","mobile","Dimensity 9400",2024,"3 nm","8 (1+3+4)");mk("dim-9200","MediaTek","mobile","Dimensity 9200",2022,"4 nm","8 (1+3+4)");
+mk("dim-8300","MediaTek","mobile","Dimensity 8300",2023,"4 nm","8 (1+3+4)");mk("tensor-g4","Google","mobile","Google Tensor G4",2024,"4 nm","8 (1+3+4)");
+mk("exynos-2200","Samsung","mobile","Exynos 2200",2022,"4 nm","8 (1+3+4)");mk("helio-g99","MediaTek","mobile","Helio G99",2022,"6 nm","8 (2+6)");
+mk("unisoc-t820","Unisoc","mobile","Unisoc T820",2022,"6 nm","8 (1+3+4)");
+mk("apple-m4","Apple","laptop","Apple M4",2024,"3 nm","up to 10 (4P+6E)");mk("apple-m1","Apple","laptop","Apple M1",2020,"5 nm","8 (4P+4E)");
+mk("r9-7940hs","AMD","laptop","Ryzen 9 7940HS",2023,"4 nm","8C / 16T",{clock:"4.0 / 5.2 GHz"});mk("r7-7840hs","AMD","laptop","Ryzen 7 7840HS",2023,"4 nm","8C / 16T",{clock:"3.8 / 5.1 GHz"});
+mk("i7-13700h","Intel","laptop","Core i7-13700H",2023,"Intel 7","14 (6P+8E) / 20T",{clock:"up to 5.0 GHz",tdp:45});
+mk("r9-7900x","AMD","desktop","Ryzen 9 7900X",2022,"5 nm","12C / 24T",{clock:"4.7 / 5.6 GHz",cache:"64 MB L3",tdp:170});mk("r7-7700x","AMD","desktop","Ryzen 7 7700X",2022,"5 nm","8C / 16T",{clock:"4.5 / 5.4 GHz",cache:"32 MB L3",tdp:105});
+mk("r9-9950x","AMD","desktop","Ryzen 9 9950X",2024,"4 nm","16C / 32T",{clock:"4.3 / 5.7 GHz",cache:"64 MB L3",tdp:170});mk("r7-9800x3d","AMD","desktop","Ryzen 7 9800X3D",2024,"4 nm","8C / 16T",{clock:"4.7 / 5.2 GHz",cache:"96 MB L3",tdp:120});
+mk("r5-5600x","AMD","desktop","Ryzen 5 5600X",2020,"7 nm","6C / 12T",{clock:"3.7 / 4.6 GHz",cache:"32 MB L3",tdp:65});mk("tr-7980x","AMD","desktop","Ryzen Threadripper 7980X",2023,"5 nm","64C / 128T",{clock:"3.2 / 5.1 GHz",cache:"256 MB L3",tdp:350});
+mk("i7-14700k","Intel","desktop","Core i7-14700K",2023,"Intel 7","20 (8P+12E) / 28T",{clock:"3.4 / 5.6 GHz",cache:"33 MB L3",tdp:125});mk("i9-13900k","Intel","desktop","Core i9-13900K",2022,"Intel 7","24 (8P+16E) / 32T",{clock:"3.0 / 5.8 GHz",cache:"36 MB L3",tdp:125});
+mk("i5-12400f","Intel","desktop","Core i5-12400F",2022,"Intel 7","6C / 12T",{clock:"2.5 / 4.4 GHz",cache:"18 MB L3",tdp:65});mk("ultra-9-285k","Intel","desktop","Core Ultra 9 285K",2024,"TSMC N3B","24 (8P+16E)",{clock:"3.7 / 5.7 GHz",cache:"36 MB L3",tdp:125});
+mk("rtx-5090","NVIDIA","gpu","GeForce RTX 5090",2025,"TSMC 4N","21760 CUDA",{arch:"Blackwell",mem:"32 GB GDDR7",tdp:575});mk("rtx-5080","NVIDIA","gpu","GeForce RTX 5080",2025,"TSMC 4N","10752 CUDA",{arch:"Blackwell",mem:"16 GB GDDR7",tdp:360});
+mk("rtx-5070","NVIDIA","gpu","GeForce RTX 5070",2025,"TSMC 4N","6144 CUDA",{arch:"Blackwell",mem:"12 GB GDDR7",tdp:250});mk("rtx-4080","NVIDIA","gpu","GeForce RTX 4080",2022,"TSMC 4N","9728 CUDA",{arch:"Ada Lovelace",mem:"16 GB GDDR6X",tdp:320});
+mk("rtx-4070s","NVIDIA","gpu","GeForce RTX 4070 Super",2024,"TSMC 4N","7168 CUDA",{arch:"Ada Lovelace",mem:"12 GB GDDR6X",tdp:220});mk("rtx-4060","NVIDIA","gpu","GeForce RTX 4060",2023,"TSMC 4N","3072 CUDA",{arch:"Ada Lovelace",mem:"8 GB GDDR6",tdp:115});
+mk("rtx-3080","NVIDIA","gpu","GeForce RTX 3080",2020,"Samsung 8 nm","8704 CUDA",{arch:"Ampere",mem:"10 GB GDDR6X",tdp:320});mk("gtx-1660s","NVIDIA","gpu","GeForce GTX 1660 Super",2019,"TSMC 12 nm","1408 CUDA",{arch:"Turing",mem:"6 GB GDDR6",tdp:125});
+mk("rx-7900xtx","AMD","gpu","Radeon RX 7900 XTX",2022,"TSMC 5/6 nm","6144 SP",{arch:"RDNA 3",mem:"24 GB GDDR6",tdp:355});mk("rx-9070xt","AMD","gpu","Radeon RX 9070 XT",2025,"TSMC 4 nm","4096 SP",{arch:"RDNA 4",mem:"16 GB GDDR6",tdp:304});
+mk("rx-7600","AMD","gpu","Radeon RX 7600",2023,"TSMC 6 nm","2048 SP",{arch:"RDNA 3",mem:"8 GB GDDR6",tdp:165});mk("rx-6600","AMD","gpu","Radeon RX 6600",2021,"TSMC 7 nm","1792 SP",{arch:"RDNA 2",mem:"8 GB GDDR6",tdp:132});
+mk("arc-b580","Intel","gpu","Arc B580",2024,"TSMC 5 nm","20 Xe cores",{arch:"Battlemage",mem:"12 GB GDDR6",tdp:190});mk("arc-a750","Intel","gpu","Arc A750",2022,"TSMC 6 nm","28 Xe cores",{arch:"Alchemist",mem:"8 GB GDDR6",tdp:225});
+mk("r5-7600","AMD","desktop","Ryzen 5 7600",2023,"5 nm","6C / 12T",{clock:"3.8 / 5.1 GHz",cache:"32 MB L3",tdp:65});mk("r7-5800x3d","AMD","desktop","Ryzen 7 5800X3D",2022,"7 nm","8C / 16T",{clock:"3.4 / 4.5 GHz",cache:"96 MB L3",tdp:105});
+mk("r9-5950x","AMD","desktop","Ryzen 9 5950X",2020,"7 nm","16C / 32T",{clock:"3.4 / 4.9 GHz",cache:"64 MB L3",tdp:105});mk("r7-9700x","AMD","desktop","Ryzen 7 9700X",2024,"4 nm","8C / 16T",{clock:"3.8 / 5.5 GHz",cache:"32 MB L3",tdp:65});
+mk("r5-9600x","AMD","desktop","Ryzen 5 9600X",2024,"4 nm","6C / 12T",{clock:"3.9 / 5.4 GHz",cache:"32 MB L3",tdp:65});mk("r9-9900x","AMD","desktop","Ryzen 9 9900X",2024,"4 nm","12C / 24T",{clock:"4.4 / 5.6 GHz",cache:"64 MB L3",tdp:120});
+mk("tr-7970x","AMD","desktop","Ryzen Threadripper 7970X",2023,"5 nm","32C / 64T",{clock:"4.0 / 5.3 GHz",cache:"128 MB L3",tdp:350});mk("i5-14600k","Intel","desktop","Core i5-14600K",2023,"Intel 7","14 (6P+8E) / 20T",{clock:"3.5 / 5.3 GHz",cache:"24 MB L3",tdp:125});
+mk("i9-12900k","Intel","desktop","Core i9-12900K",2021,"Intel 7","16 (8P+8E) / 24T",{clock:"3.2 / 5.2 GHz",cache:"30 MB L3",tdp:125});mk("i7-12700k","Intel","desktop","Core i7-12700K",2021,"Intel 7","12 (8P+4E) / 20T",{clock:"3.6 / 5.0 GHz",cache:"25 MB L3",tdp:125});
+mk("ultra-7-265k","Intel","desktop","Core Ultra 7 265K",2024,"TSMC N3B","20 (8P+12E)",{clock:"3.9 / 5.5 GHz",cache:"30 MB L3",tdp:125});mk("i3-12100f","Intel","desktop","Core i3-12100F",2022,"Intel 7","4C / 8T",{clock:"3.3 / 4.3 GHz",cache:"12 MB L3",tdp:58});
+mk("r9-7945hx","AMD","laptop","Ryzen 9 7945HX",2023,"5 nm","16C / 32T",{clock:"2.5 / 5.4 GHz"});mk("r7-8845hs","AMD","laptop","Ryzen 7 8845HS",2024,"4 nm","8C / 16T",{clock:"3.8 / 5.1 GHz"});
+mk("i9-13980hx","Intel","laptop","Core i9-13980HX",2023,"Intel 7","24 (8P+16E) / 32T",{clock:"up to 5.6 GHz",tdp:55});mk("sd-x-elite","Qualcomm","laptop","Snapdragon X Elite",2024,"4 nm","12 cores");
+mk("sd-888","Qualcomm","mobile","Snapdragon 888",2020,"5 nm","8 (1+3+4)");mk("sd-8p-gen-1","Qualcomm","mobile","Snapdragon 8+ Gen 1",2022,"4 nm","8 (1+3+4)");
+mk("sd-8s-gen-3","Qualcomm","mobile","Snapdragon 8s Gen 3",2024,"4 nm","8 (1+4+3)");mk("dim-9000","MediaTek","mobile","Dimensity 9000",2021,"4 nm","8 (1+3+4)");
+mk("exynos-2100","Samsung","mobile","Exynos 2100",2021,"5 nm","8 (1+3+4)");mk("tensor-g2","Google","mobile","Google Tensor G2",2022,"5 nm","8 (2+2+4)");
+mk("apple-a14","Apple","mobile","Apple A14 Bionic",2020,"5 nm","6 (2P+4E)");mk("helio-g88","MediaTek","mobile","Helio G88",2021,"12 nm","8 (2+6)");
+/* newer mobile SoCs (added with AnTuTu scores) */
+mk("sd-8-elite-gen5","Qualcomm","mobile","Snapdragon 8 Elite Gen 5",2025,"3 nm","8 (2+6)");mk("sd-8s-gen-4","Qualcomm","mobile","Snapdragon 8s Gen 4",2025,"4 nm","8 cores");
+mk("dim-9500","MediaTek","mobile","Dimensity 9500",2025,"3 nm","8 (1+3+4)");mk("dim-9400-plus","MediaTek","mobile","Dimensity 9400+",2025,"3 nm","8 (1+3+4)");
+mk("dim-8400","MediaTek","mobile","Dimensity 8400",2024,"4 nm","8 cores");mk("exynos-2500","Samsung","mobile","Exynos 2500",2025,"3 nm","10 cores");
+mk("tensor-g5","Google","mobile","Google Tensor G5",2025,"3 nm","8 cores");
+mk("apple-a19-pro","Apple","mobile","Apple A19 Pro",2025,"3 nm","6 (2P+4E)");mk("apple-a19","Apple","mobile","Apple A19",2025,"3 nm","6 (2P+4E)");
+mk("apple-a18-pro","Apple","mobile","Apple A18 Pro",2024,"3 nm","6 (2P+4E)");mk("apple-a18","Apple","mobile","Apple A18",2024,"3 nm","6 (2P+4E)");
+mk("rtx-5070ti","NVIDIA","gpu","GeForce RTX 5070 Ti",2025,"TSMC 4N","8960 CUDA",{arch:"Blackwell",mem:"16 GB GDDR7",tdp:300});mk("rtx-4070ti-s","NVIDIA","gpu","GeForce RTX 4070 Ti Super",2024,"TSMC 4N","8448 CUDA",{arch:"Ada Lovelace",mem:"16 GB GDDR6X",tdp:285});
+mk("rtx-4070ti","NVIDIA","gpu","GeForce RTX 4070 Ti",2023,"TSMC 4N","7680 CUDA",{arch:"Ada Lovelace",mem:"12 GB GDDR6X",tdp:285});mk("rtx-4060ti","NVIDIA","gpu","GeForce RTX 4060 Ti",2023,"TSMC 4N","4352 CUDA",{arch:"Ada Lovelace",mem:"8 GB GDDR6",tdp:160});
+mk("rtx-3090","NVIDIA","gpu","GeForce RTX 3090",2020,"Samsung 8 nm","10496 CUDA",{arch:"Ampere",mem:"24 GB GDDR6X",tdp:350});mk("rtx-3070","NVIDIA","gpu","GeForce RTX 3070",2020,"Samsung 8 nm","5888 CUDA",{arch:"Ampere",mem:"8 GB GDDR6",tdp:220});
+mk("gtx-1080ti","NVIDIA","gpu","GeForce GTX 1080 Ti",2017,"TSMC 16 nm","3584 CUDA",{arch:"Pascal",mem:"11 GB GDDR5X",tdp:250});mk("gtx-1650","NVIDIA","gpu","GeForce GTX 1650",2019,"TSMC 12 nm","896 CUDA",{arch:"Turing",mem:"4 GB GDDR5",tdp:75});
+mk("rx-9070","AMD","gpu","Radeon RX 9070",2025,"TSMC 4 nm","3584 SP",{arch:"RDNA 4",mem:"16 GB GDDR6",tdp:220});mk("rx-7900xt","AMD","gpu","Radeon RX 7900 XT",2022,"TSMC 5/6 nm","5376 SP",{arch:"RDNA 3",mem:"20 GB GDDR6",tdp:315});
+mk("rx-7700xt","AMD","gpu","Radeon RX 7700 XT",2023,"TSMC 5/6 nm","3456 SP",{arch:"RDNA 3",mem:"12 GB GDDR6",tdp:245});mk("rx-6800xt","AMD","gpu","Radeon RX 6800 XT",2020,"TSMC 7 nm","4608 SP",{arch:"RDNA 2",mem:"16 GB GDDR6",tdp:300});
+mk("rx-580","AMD","gpu","Radeon RX 580",2017,"GlobalFoundries 14 nm","2304 SP",{arch:"Polaris",mem:"8 GB GDDR5",tdp:185});mk("arc-b570","Intel","gpu","Arc B570",2025,"TSMC 5 nm","18 Xe cores",{arch:"Battlemage",mem:"10 GB GDDR6",tdp:150});
+/* desktop GPUs from the AnTuTu PC AI list that were not in the data yet (specs are public manufacturer figures; null = not listed) */
+mk("rtx-5060ti","NVIDIA","gpu","GeForce RTX 5060 Ti",2025,"TSMC 4N","4608 CUDA",{arch:"Blackwell",mem:"8 / 16 GB GDDR7",tdp:180});mk("rtx-5060","NVIDIA","gpu","GeForce RTX 5060",2025,"TSMC 4N","3840 CUDA",{arch:"Blackwell",mem:"8 GB GDDR7",tdp:145});
+mk("rtx-3070ti","NVIDIA","gpu","GeForce RTX 3070 Ti",2021,"Samsung 8 nm","6144 CUDA",{arch:"Ampere",mem:"8 GB GDDR6X",tdp:290});mk("rtx-3060ti","NVIDIA","gpu","GeForce RTX 3060 Ti",2020,"Samsung 8 nm","4864 CUDA",{arch:"Ampere",mem:"8 GB GDDR6",tdp:200});
+mk("rtx-3050","NVIDIA","gpu","GeForce RTX 3050",2022,"Samsung 8 nm","2560 CUDA",{arch:"Ampere",mem:"8 GB GDDR6",tdp:130});mk("rtx-2060s","NVIDIA","gpu","GeForce RTX 2060 Super",2019,"TSMC 12 nm","2176 CUDA",{arch:"Turing",mem:"8 GB GDDR6",tdp:175});
+mk("rtx-2060","NVIDIA","gpu","GeForce RTX 2060",2019,"TSMC 12 nm","1920 CUDA",{arch:"Turing",mem:"6 GB GDDR6",tdp:160});mk("gtx-1660ti","NVIDIA","gpu","GeForce GTX 1660 Ti",2019,"TSMC 12 nm","1536 CUDA",{arch:"Turing",mem:"6 GB GDDR6",tdp:120});
+mk("gtx-1070ti","NVIDIA","gpu","GeForce GTX 1070 Ti",2017,"TSMC 16 nm","2432 CUDA",{arch:"Pascal",mem:"8 GB GDDR5",tdp:180});mk("gtx-1060","NVIDIA","gpu","GeForce GTX 1060",2016,"TSMC 16 nm","1152–1280 CUDA",{arch:"Pascal",mem:"3 / 6 GB GDDR5",tdp:120});
+mk("rtx-a5000","NVIDIA","gpu","NVIDIA RTX A5000",2021,"Samsung 8 nm","8192 CUDA",{arch:"Ampere",mem:"24 GB GDDR6",tdp:230});mk("rtx-a4000","NVIDIA","gpu","NVIDIA RTX A4000",2021,"Samsung 8 nm","6144 CUDA",{arch:"Ampere",mem:"16 GB GDDR6",tdp:140});
+mk("rtx-a2000-12","NVIDIA","gpu","NVIDIA RTX A2000 12GB",2021,"Samsung 8 nm","3328 CUDA",{arch:"Ampere",mem:"12 GB GDDR6",tdp:70});
+mk("rx-9060xt","AMD","gpu","Radeon RX 9060 XT",2025,"TSMC 4 nm","2048 SP",{arch:"RDNA 4",mem:"8 / 16 GB GDDR6"});mk("rx-6750gre","AMD","gpu","Radeon RX 6750 GRE",2023,"TSMC 7 nm","2304–2560 SP",{arch:"RDNA 2",mem:"10 / 12 GB GDDR6"});
+mk("rx-6600xt","AMD","gpu","Radeon RX 6600 XT",2021,"TSMC 7 nm","2048 SP",{arch:"RDNA 2",mem:"8 GB GDDR6",tdp:160});mk("rx-5700","AMD","gpu","Radeon RX 5700",2019,"TSMC 7 nm","2304 SP",{arch:"RDNA",mem:"8 GB GDDR6",tdp:180});
+mk("rx-5500xt","AMD","gpu","Radeon RX 5500 XT",2019,"TSMC 7 nm","1408 SP",{arch:"RDNA",mem:"4 / 8 GB GDDR6",tdp:130});
+/* ---- AnTuTu PC AI (large-model) scores for desktop/PC GPUs. Source: https://www.antutu.com/ranking/pc?type=2 , read 2026-10-19.
+   AnTuTu states these are the average of that model's submitted runs, not the peak. Laptop GPUs and iGPUs on that list are not included. ---- */
+const AI_SRC="https://www.antutu.com/ranking/pc?type=2",AI_DATE="2026-10-19",AIB={};
+"rtx-5090 1691126|rtx-5080 1475919|rtx-3090 1371358|rx-7900xtx 1359724|rtx-5070ti 1322255|rtx-4080 1244282|rtx-5070 1181609|rtx-a5000 1153730|rtx-3080 1146693|rtx-3070ti 1071201|rtx-4070ti 1054237|rtx-4070 1023265|rtx-3070 952979|rtx-5060ti 929709|rtx-3060ti 913535|rtx-5060 883808|rtx-a4000 877146|rtx-2060s 807777|rtx-3060 806059|gtx-1080ti 783700|rtx-4060ti 776720|rtx-4060 744358|rtx-a2000-12 701549|gtx-1070ti 622273|rtx-2060 530265|gtx-1060 450001|rtx-3050 407579|rx-9070 397281|gtx-1660ti 389951|rx-5700 310737|rx-6750gre 288366|rx-9060xt 285253|rx-6600xt 276229|rx-5500xt 276194".split("|").forEach(e=>{const[i,v]=e.split(" ");AIB[i]=+v});
+const atai=id=>AIB[id]??null;
+/* ---- AnTuTu 11 scores. Source: NanoReview SoC rating list (https://nanoreview.net/en/soc-list/rating), read 2026-10-19.
+   Reference figures from that list, not our own measurements. ---- */
+const AT_SRC="https://nanoreview.net/en/soc-list/rating",BENCH=[];
+"apple-a14 1326975|apple-a15 1413275|apple-a16 1626008|apple-a17-pro 1467470|apple-a18 1972476|apple-a18-pro 1782199|apple-a19 2156126|apple-a19-pro 2538751|sd-8-elite 3126402|sd-8-elite-gen5 3950082|sd-8-gen-3 2345563|sd-8-gen-2 1757044|sd-8-gen-1 1294871|sd-8p-gen-1 1420808|sd-8s-gen-3 1797821|sd-8s-gen-4 2314417|sd-888 1135878|dim-9500 3760662|dim-9400 2825187|dim-9400-plus 2874956|dim-9300 2447714|dim-9200 1755232|dim-9000 1504467|dim-8300 1604305|dim-8400 1948428|exynos-2500 2289696|exynos-2400 2046435|exynos-2200 1434169|exynos-2100 1065369|tensor-g5 1549798|tensor-g4 1519937|tensor-g3 1409016|tensor-g2 1186373|helio-g99 554590|helio-g88 365001|unisoc-t820 757199".split("|").forEach(e=>{const[i,s]=e.split(" ");BENCH.push({chip:i,bench:"AnTuTu",version:"11",score:+s,source:AT_SRC,date:"2026-10-19",kind:"reference",conditions:"NanoReview list score"})});
+/* ---- Games: requirement chipsets from each game's published specs; their AnTuTu 11 scores are from the same NanoReview list.
+   Where a spec lists several chipsets, the lowest-scoring one that appears on the list is used. ---- */
+const GAMES=[
+{id:"genshin",name:"Genshin Impact",cap:60,src:"https://support.hoyoverse.com/hc/en-us/articles/52089402685593-What-are-the-system-requirements-to-play-Genshin-Impact",
+ and:{min:["Snapdragon 660",347995],rec:["Kirin 980",736755]},ios:{min:["Apple A11",626912],rec:["Apple A13",1101851]}},
+{id:"hsr",name:"Honkai: Star Rail",cap:60,src:"https://game8.co/games/Honkai-Star-Rail/archives/429638",
+ and:{min:["Snapdragon 835",438016],rec:["Snapdragon 855",824513]},ios:{min:["Apple A10 Fusion",516981],rec:["Apple A12",895627]}},
+{id:"wuwa",name:"Wuthering Waves",cap:60,src:"https://beebom.com/wuthering-waves-system-requirements/",
+ and:{min:["Snapdragon 835",438016],rec:["Snapdragon 8+ Gen 1",1420808]},ios:null}];
+const platOf=c=>c.mfr==="Apple"?"ios":"and";
+/* Estimate model: minimum chipset = 30 FPS, recommended chipset = the game's cap (60), linear in AnTuTu between them,
+   scaled down below the minimum. Not measured gameplay. */
+function gameEst(c,g){const s=atutu(c.id);if(s==null||c.cat!=="mobile")return null;const sp=g[platOf(c)];if(!sp)return null;const mn=sp.min[1],rc=sp.rec[1];
+const fps=s>=rc?g.cap:s>=mn?30+(g.cap-30)*(s-mn)/(rc-mn):30*s/mn;
+return{fps:Math.round(fps),head:s/rc,tier:s>=rc*2?"Highest":s>=rc*1.5?"High":s>=rc?"Medium":s>=mn?"Low":"Below minimum"}}
+const PAL=["#5cc8ff","#8b7bff","#4fd08a","#ffb454"],FX=35;
+/* Launch MSRPs in USD, entered from memory: verify before relying on them. Not current Thai shelf prices. */
+const MSRP={};"rtx-5090 1999|rtx-5080 999|rtx-5070ti 749|rtx-5070 549|rtx-4090 1599|rtx-4080 1199|rtx-4070ti-s 799|rtx-4070ti 799|rtx-4070s 599|rtx-4070 599|rtx-4060ti 399|rtx-4060 299|rtx-3090 1499|rtx-3080 699|rtx-3070 499|rtx-3060 329|gtx-1660s 229|gtx-1650 149|gtx-1080ti 699|rx-7900xtx 999|rx-7900xt 899|rx-7800xt 499|rx-7700xt 449|rx-7600 269|rx-6800xt 649|rx-6600 329|rx-580 229|rx-9070xt 599|rx-9070 549|arc-a770 349|arc-a750 289|arc-b580 249|arc-b570 219|r7-7800x3d 449|r9-7950x 699|r9-7900x 549|r7-7700x 399|r5-7600x 299|r5-7600 229|r9-9950x 649|r9-9900x 499|r7-9800x3d 479|r7-9700x 359|r5-9600x 279|r7-5800x3d 449|r9-5950x 799|r5-5600x 299|i9-14900k 589|i7-14700k 409|i5-14600k 319|i9-13900k 589|i5-13600k 319|i9-12900k 589|i7-12700k 409|i5-12400f 167|i3-12100f 97|ultra-9-285k 589|ultra-7-265k 394|tr-7980x 4999|tr-7970x 2499".split("|").forEach(e=>{const[i,p]=e.split(" ");MSRP[i]=+p});
+const priceOf=id=>MSRP[id]?{price:Math.round(MSRP[id]*FX),kind:"launch MSRP $"+MSRP[id]+" × "+FX,date:"launch"}:null;
+const CATS={mobile:"Mobile SoCs",desktop:"Desktop CPUs",laptop:"Laptop CPUs",gpu:"GPUs"};
+const BR={Apple:"#7c8798",Qualcomm:"#3b5bdb",MediaTek:"#d99a00",Samsung:"#1f3fae",Google:"#3b82f6",AMD:"#e03131",Intel:"#0a74c9",NVIDIA:"#5f9b00",Unisoc:"#7c5cff"};
+const FIELDS=[["mfr","Manufacturer"],["cat","Category"],["year","Release year"],["proc","Process"],["arch","Architecture"],["cores","Cores"],["clock","Base / boost clock"],["cache","Cache"],["mem","Memory"],["tdp","TDP (W)"]];
+/* ---- Local storage (this browser only; not synced) ---- */
+const ls={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let ALL=BENCH,SEL=ls.get("cc_sel",[]).filter(id=>byId(id));
+function byId(id){return CHIPS.find(c=>c.id===id)}
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const $=s=>document.querySelector(s),app=$("#app");
+const kind=k=>`<span class="tag">${esc(k)}</span>`;
+const est=()=>`<span class="tag dm" title="Calculated from AnTuTu vs the game's requirement chipsets — not measured gameplay">estimate</span>`;
+const bkey=b=>b.bench+" · "+b.version,ATK="AnTuTu · 11";
+const mono=c=>`<span class="av" style="--b:${BR[c.mfr]||"#5b6b8c"}" aria-hidden="true">${esc(c.mfr[0])}</span>`;
+const atutu=id=>{const a=ALL.filter(b=>b.chip===id&&bkey(b)===ATK).map(b=>b.score);return a.length?Math.max(...a):null};
+const atApplies=c=>c.cat==="mobile";
+function find(q){q=q.toLowerCase().trim();if(!q)return CHIPS;const t=q.split(/\s+/);return CHIPS.filter(c=>{const h=(c.name+" "+c.mfr+" "+(c.arch||"")+" "+CATS[c.cat]).toLowerCase();return t.every(w=>h.includes(w))})}
+const debounce=(f,ms=150)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>f(...a),ms)}};
+function goto(h){if(location.hash===h)route();else location.hash=h}
+function srcLink(s){return /^https?:\/\//.test(s||"")?`<a href="${esc(s)}" target="_blank" rel="noopener">source</a>`:esc(s||"—")}
+/* ---- Selection ---- */
+function saveSel(){ls.set("cc_sel",SEL)}
+function toggle(id){const i=SEL.indexOf(id);if(i>=0)SEL.splice(i,1);else if(SEL.length>=4){alert("You can compare up to 4 chips at once.");return false}else SEL.push(id);saveSel();tray();return true}
+function tray(){const t=$("#tray");document.querySelectorAll("[data-sel]").forEach(i=>{i.checked=SEL.includes(i.dataset.sel)});
+if(!SEL.length){t.hidden=true;t.innerHTML="";return}t.hidden=false;
+t.innerHTML=`<span class="cnt">${SEL.length}/4</span>`+SEL.map(id=>`<span class="chip">${esc(byId(id).name)} <button data-rm="${id}" aria-label="Remove ${esc(byId(id).name)}">✕</button></span>`).join("")+
+`<a class="btn" href="#/compare?ids=${SEL.join(",")}">${SEL.length<2?"Add one more to compare":"Compare "+SEL.length}</a><button class="btn s" id="clr" type="button">Clear</button>`;applyLang(t)}
+function selChanged(){const h=location.hash;tray();if(h.startsWith("#/compare"))goto("#/compare"+(SEL.length?"?ids="+SEL.join(","):""));else if(h.startsWith("#/chip"))route()}
+$("#tray").addEventListener("click",e=>{const r=e.target.closest("[data-rm]");if(r){const i=SEL.indexOf(r.dataset.rm);if(i>=0)SEL.splice(i,1);saveSel();selChanged();return}
+if(e.target.closest("#clr")){SEL.length=0;saveSel();selChanged()}});
+/* ---- Views ---- */
+function cardHTML(c){const a=atutu(c.id);return `<article class="glass card"><div class="ch">${mono(c)}<div><h3><a href="#/chip/${c.id}">${esc(c.name)}</a></h3><div class="mu sm">${esc(c.mfr)} · ${esc(c.cores)} · ${esc(c.proc)}</div></div></div>
+<div><span class="tag">${CATS[c.cat]}</span><span class="tag">${c.year}</span></div>
+${a?`<div class="sc">${a.toLocaleString()} <small>AnTuTu 11</small></div>`:`<div class="sm mu" style="margin-top:4px">${atApplies(c)?"No AnTuTu score yet":"AnTuTu is a mobile test — n/a"}</div>`}
+${(p=>p?`<div class="sm">≈ ${p.price.toLocaleString()} THB <span class="tag">launch MSRP</span></div>`:"")(priceOf(c.id))}<label class="sm row" style="margin-top:8px"><input type="checkbox" data-sel="${c.id}" ${SEL.includes(c.id)?"checked":""}> Compare</label></article>`}
+document.addEventListener("change",e=>{const s=e.target.dataset?.sel;if(s&&!toggle(s))e.target.checked=false});
+function home(){app.innerHTML=`<span class="eyebrow"><i></i>AnTuTu 11 + estimated game FPS</span><h1>Compare Chips.<br><span>Know Your Power.</span></h1>
+<p class="mu" style="max-width:560px">Specs, AnTuTu scores and estimated phone gaming FPS from each game's requirement chipsets. Every number shows its source, and estimates are labelled.</p>
+<div class="search"><input id="q" aria-label="Search chips" placeholder="Search a chip, brand or series…"><ul id="sug" class="sug glass" role="listbox" hidden></ul></div>
+<div class="row" style="margin:18px 0 0">${[[CHIPS.length,"Chips"],[new Set(CHIPS.map(c=>c.mfr)).size,"Brands"],[BENCH.length,"AnTuTu scores"]].map(([n,l])=>`<div class="glass stat"><b>${n}</b><span class="sm mu">${l}</span></div>`).join("")}</div><div class="row" style="margin:16px 0">${Object.entries(CATS).map(([k,v])=>`<a class="btn s" href="#/explorer?cat=${k}">${v}</a>`).join("")}<a class="btn" href="#/compare">Compare chips →</a></div>
+<h2>Recently added</h2><div class="grid">${[...CHIPS].sort((a,b)=>b.year-a.year).slice(0,6).map(cardHTML).join("")}</div>
+<h2>AnTuTu 11 — top 6</h2><div class="glass card">${rank(ATK,6)}</div><p class="sm mu">Scores from <a href="${AT_SRC}" target="_blank" rel="noopener">NanoReview</a> · <a href="#/bench">full ranking →</a></p>`;
+ac($("#q"),$("#sug"),c=>{location.hash="#/chip/"+c.id})}
+function explorer(p){const st={q:p.get("q")||"",cat:p.get("cat")||"",mfr:"",year:"",sort:"year",n:12};
+app.innerHTML=`<h2>Chip Explorer</h2><div class="row glass card"><input id="eq" placeholder="Search…" value="${esc(st.q)}" aria-label="Search">
+<select id="ec" aria-label="Category"><option value="">All categories</option>${Object.entries(CATS).map(([k,v])=>`<option value="${k}" ${k===st.cat?"selected":""}>${v}</option>`).join("")}</select>
+<select id="em" aria-label="Manufacturer"><option value="">All makers</option>${[...new Set(CHIPS.map(c=>c.mfr))].sort().map(m=>`<option>${m}</option>`).join("")}</select>
+<select id="ey" aria-label="Year"><option value="">Any year</option>${[...new Set(CHIPS.map(c=>c.year))].sort().reverse().map(y=>`<option>${y}</option>`).join("")}</select>
+<select id="es" aria-label="Sort"><option value="year">Newest</option><option value="name">Name</option><option value="antutu">AnTuTu (high→low)</option><option value="price">Launch price (low→high)</option></select></div>
+<p class="sm mu" id="cnt"></p><div class="grid" id="gr"></div><p><button class="btn s" id="more">Load more</button></p>`;
+const go=()=>{let r=find(st.q).filter(c=>(!st.cat||c.cat===st.cat)&&(!st.mfr||c.mfr===st.mfr)&&(!st.year||c.year==st.year));
+r.sort(st.sort==="name"?(a,b)=>a.name.localeCompare(b.name):st.sort==="antutu"?(a,b)=>(atutu(b.id)??-1)-(atutu(a.id)??-1):st.sort==="price"?(a,b)=>(priceOf(a.id)?.price??1e12)-(priceOf(b.id)?.price??1e12):(a,b)=>b.year-a.year);
+$("#cnt").textContent=r.length+" chips";$("#gr").innerHTML=r.slice(0,st.n).map(cardHTML).join("")||`<p class="mu">No chips match. Try fewer filters.</p>`;$("#more").hidden=r.length<=st.n;applyLang($("#app"))};
+const bind=(id,k)=>$(id).addEventListener("change",e=>{st[k]=e.target.value;st.n=12;go()});
+$("#eq").addEventListener("input",debounce(e=>{st.q=e.target.value;st.n=12;go()},180));bind("#ec","cat");bind("#em","mfr");bind("#ey","year");bind("#es","sort");
+$("#more").onclick=()=>{st.n+=12;go()};go()}
+function gameRows(cs){const gs=GAMES.map(g=>({g,r:cs.map(c=>gameEst(c,g))}));if(!gs.some(x=>x.r.some(Boolean)))return"";
+return `<div class="glass card scroll"><table><tr><th>Game</th>${cs.map(c=>`<th>${esc(c.name)}</th>`).join("")}</tr>${gs.map(({g,r})=>`<tr><th><a href="#/games?g=${g.id}">${esc(g.name)}</a></th>${r.map(e=>`<td>${e?`<b>${e.fps} FPS</b> <span class="tag">${e.tier}</span>`:'<span class="mu">—</span>'}</td>`).join("")}</tr>`).join("")}</table><p class="sm mu" style="margin:10px 0 0">${est()} Estimated average FPS and a suggested preset from AnTuTu vs each game's requirement chipsets. “—” = no score or no platform requirement.</p></div>`}
+function chip(id){const c=byId(id);if(!c){app.innerHTML=`<h2>Chip not found</h2><a href="#/explorer">Back to explorer</a>`;return}
+const rel=CHIPS.filter(x=>x.cat===c.cat&&x.id!==id).slice(0,3),a=ALL.find(b=>b.chip===id&&bkey(b)===ATK),gr=gameRows([c]);
+app.innerHTML=`<div class="ch" style="margin-top:28px">${mono(c)}<div><h2 style="margin:0">${esc(c.name)}</h2><div class="mu">${esc(c.mfr)} · ${CATS[c.cat]}</div></div></div>
+${a?`<div class="glass tile" style="margin-top:14px"><div class="sc big">${a.score.toLocaleString()}</div><div class="sm mu">AnTuTu 11 · ${srcLink(a.source)} · ${esc(a.date)}</div></div>`:`<p class="mu">${atApplies(c)?"No AnTuTu score for this chip yet.":"AnTuTu is a mobile benchmark, so there is no score for this chip type."}</p>`}
+<div class="glass card scroll" style="margin-top:14px"><table>${FIELDS.filter(([k])=>c[k]!=null).map(([k,l])=>`<tr><th>${l}</th><td>${esc(k==="cat"?CATS[c[k]]:c[k])}</td></tr>`).join("")}</table></div>
+${gr?`<h2>Gaming (estimated)</h2>${gr}`:""}
+<p class="row"><button class="btn" id="add">${SEL.includes(id)?"Remove from comparison":"Add to comparison"}</button>${rel.map(r=>`<a class="btn s" href="#/compare?ids=${id},${r.id}">vs ${esc(r.name)}</a>`).join("")}</p>`;
+post();$("#add").onclick=()=>{toggle(id);chip(id)}}
+function compare(p){let ids=(p.has("ids")?p.get("ids"):SEL.join(",")).split(",").filter(byId).slice(0,4);
+if(p.has("ids")){SEL.length=0;SEL.push(...ids);saveSel()}
+if(ids.length<2){app.innerHTML=`<h2>Compare</h2><p class="mu">Pick at least two chips (currently ${ids.length}).</p><div class="nsearch" style="max-width:420px"><input id="pick" placeholder="Search a chip to add…" aria-label="Add chip" style="width:100%"><ul id="pks" class="sug glass" role="listbox" hidden></ul></div><p><a class="btn s" href="#/explorer">Browse explorer</a></p>`;
+ac($("#pick"),$("#pks"),c=>{if(!SEL.includes(c.id))toggle(c.id);goto("#/compare?ids="+SEL.join(","))});return}
+const cs=ids.map(byId),url=location.href,col=id=>PAL[ids.indexOf(id)%4];
+const have=cs.filter(c=>atutu(c.id)!=null),sum=[];
+const tiles=`<div class="tiles">${cs.map(c=>{const s=atutu(c.id);return `<div class="glass tile"><div class="ch">${mono(c)}<div class="sm"><b>${esc(c.name)}</b></div></div>${s?`<div class="sc big">${s.toLocaleString()}</div><div class="sm mu">AnTuTu 11</div>`:`<div class="mu" style="margin-top:12px">${atApplies(c)?"No AnTuTu score yet":"N/A — AnTuTu is a mobile test"}</div>`}</div>`}).join("")}</div>`;
+let rankCard="",ring="";
+if(have.length>=2){const rows=have.map(c=>({c,s:atutu(c.id)})).sort((x,y)=>y.s-x.s),max=rows[0].s;
+rankCard=`<div class="glass card" style="margin-top:12px"><strong>AnTuTu 11</strong> <span class="sm mu">higher is better</span>${rows.map((r,i)=>{const pct=r.s/max*100;return `<div class="pr"><div class="pn"><span style="color:${col(r.c.id)};font-weight:600">${i+1}. ${esc(r.c.name)}</span></div><div class="pb"><i data-w="${pct}" style="--c:${col(r.c.id)};width:0"></i><b>${r.s.toLocaleString()}</b></div><div class="sm ${i?"mu":"win"}">${i?(pct-100).toFixed(1)+"% vs leader":"Leader"}</div></div>`}).join("")}</div>`;
+sum.push("AnTuTu 11: "+rows[0].c.name+" leads"+rows.slice(1).map(r=>"; "+r.c.name+" "+(r.s/max*100-100).toFixed(1)+"%").join(""))}
+else rankCard=`<p class="mu sm">A ranking needs at least two chips with an AnTuTu score.</p>`;
+const hasAI=cs.filter(c=>atai(c.id)!=null),showMob=!hasAI.length||cs.some(atApplies);let aiSec="";
+if(hasAI.length){const aiTiles=`<div class="tiles">${cs.map(c=>{const s=atai(c.id);return `<div class="glass tile"><div class="ch">${mono(c)}<div class="sm"><b>${esc(c.name)}</b></div></div>${s?`<div class="sc big">${s.toLocaleString()}</div><div class="sm mu">AnTuTu PC AI</div>`:`<div class="mu" style="margin-top:12px">Not on the AnTuTu PC AI list</div>`}</div>`}).join("")}</div>`;
+let aiRank="";
+if(hasAI.length>=2){const rows=hasAI.map(c=>({c,s:atai(c.id)})).sort((x,y)=>y.s-x.s),max=rows[0].s;
+aiRank=`<div class="glass card" style="margin-top:12px"><strong>AnTuTu PC AI</strong> <span class="sm mu">higher is better</span>${rows.map((r,i)=>{const pct=r.s/max*100;return `<div class="pr"><div class="pn"><span style="color:${col(r.c.id)};font-weight:600">${i+1}. ${esc(r.c.name)}</span></div><div class="pb"><i data-w="${pct}" style="--c:${col(r.c.id)};width:0"></i><b>${r.s.toLocaleString()}</b></div><div class="sm ${i?"mu":"win"}">${i?(pct-100).toFixed(1)+"% vs leader":"Leader"}</div></div>`}).join("")}</div>`;
+sum.push("AnTuTu PC AI: "+rows[0].c.name+" leads"+rows.slice(1).map(r=>"; "+r.c.name+" "+(r.s/max*100-100).toFixed(1)+"%").join(""))}
+else aiRank=`<p class="mu sm">A ranking needs at least two chips with an AnTuTu PC AI score.</p>`;
+aiSec=`<h2>AnTuTu PC AI score</h2><p class="sm mu" style="margin-top:-6px">AI large-model test on PC GPUs · average score, not peak · <a href="${AI_SRC}" target="_blank" rel="noopener">AnTuTu PC AI ranking</a> · ${AI_DATE}</p>${aiTiles}${aiRank}`}
+const gr=gameRows(cs);
+app.innerHTML=`<h2>Comparison</h2><div class="row"><button class="btn" id="cp">Copy summary</button><button class="btn s" id="sh">Copy share link</button><span class="nsearch"><input id="addc" placeholder="+ Add chip" aria-label="Add chip" style="width:100%"><ul id="addcs" class="sug glass" role="listbox" hidden></ul></span>${cs.map(c=>`<span class="chip">${esc(c.name)} <button data-cr="${c.id}" aria-label="Remove ${esc(c.name)}">✕</button></span>`).join("")}</div>
+${showMob?`<h2>AnTuTu score</h2>${tiles}${rankCard}`:""}${aiSec}
+${gr?`<h2>Gaming (estimated)</h2>${gr}`:""}
+<h2>Specs</h2><div class="glass card scroll"><table><tr><th></th>${cs.map(c=>`<th>${esc(c.name)}</th>`).join("")}</tr>${FIELDS.filter(([k])=>cs.some(c=>c[k]!=null)).map(([k,l])=>`<tr><th>${l}</th>${cs.map(c=>`<td>${c[k]==null?'<span class="mu">—</span>':esc(k==="cat"?CATS[c[k]]:c[k])}</td>`).join("")}</tr>`).join("")}</table></div>
+<div class="note sm">No “best for” verdict is claimed: only AnTuTu scores and labelled game estimates are available.</div>`;
+$("#sh").onclick=()=>copy(url);$("#cp").onclick=()=>copy("ChipCompare: "+cs.map(c=>c.name).join(" vs ")+"\n"+(sum.join("\n")||"No shared AnTuTu data.")+"\n"+url);
+ac($("#addc"),$("#addcs"),c=>{if(ids.includes(c.id))return alert("Already selected.");if(ids.length>=4)return alert("Up to 4 chips.");goto("#/compare?ids="+[...ids,c.id].join(","))});
+app.querySelectorAll("[data-cr]").forEach(b=>b.onclick=()=>goto("#/compare?ids="+ids.filter(i=>i!==b.dataset.cr).join(",")))}
+function copy(t){(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>alert("Copied.")).catch(()=>prompt("Copy manually:",t))}
+function bench(p){const all=ALL.filter(b=>bkey(b)===ATK).sort((a,b)=>b.score-a.score),mf=p.get("m")||"";
+const max=all[0].score,rows=all.filter(b=>!mf||byId(b.chip)?.mfr===mf),mfs=[...new Set(all.map(b=>byId(b.chip)?.mfr).filter(Boolean))].sort();
+app.innerHTML=`<h2>AnTuTu 11 Rankings</h2><div class="row"><select id="bm" aria-label="Manufacturer"><option value="">All makers</option>${mfs.map(m=>`<option ${m===mf?"selected":""}>${esc(m)}</option>`).join("")}</select><span class="sm mu">${rows.length} chips · higher is better</span></div>
+<div class="note sm">Scores are taken from the <a href="${AT_SRC}" target="_blank" rel="noopener">NanoReview SoC rating list</a>, not measured here. Real phones vary with cooling, RAM and firmware, so treat gaps under about 10% as a tie.</div>
+<div class="glass card scroll"><table><tr><th>#</th><th>Chip</th><th>Score</th><th>Source</th><th>Date</th></tr>${rows.map((b,i)=>`<tr><td><span class="rk ${i<3&&!mf?"t"+(i+1):""}">${i+1}</span></td><td><a href="#/chip/${b.chip}">${esc(byId(b.chip)?.name||b.chip)}</a><div class="pb" style="margin-top:6px;min-width:160px"><i data-w="${b.score/max*100}" style="--c:var(--ac);width:0"></i></div></td><td>${b.score.toLocaleString()}</td><td>${srcLink(b.source)}</td><td>${esc(b.date)}</td></tr>`).join("")}</table></div>`;
+$("#bm").onchange=e=>goto("#/bench"+(e.target.value?"?m="+encodeURIComponent(e.target.value):""))}
+function games(p){const g=GAMES[Math.max(0,GAMES.findIndex(x=>x.id===p.get("g")))],mf=p.get("m")||"";
+const all=CHIPS.map(c=>({c,e:gameEst(c,g)})).filter(x=>x.e).sort((a,b)=>b.e.head-a.e.head),mfs=[...new Set(all.map(x=>x.c.mfr))].sort(),rows=all.filter(x=>!mf||x.c.mfr===mf),mh=all[0].e.head;
+const req=(pl,s)=>s?`<tr><td>${pl}</td><td>${esc(s.min[0])} <span class="mu sm">(${s.min[1].toLocaleString()})</span></td><td>${esc(s.rec[0])} <span class="mu sm">(${s.rec[1].toLocaleString()})</span></td></tr>`:`<tr><td>${pl}</td><td colspan="2" class="mu">No requirement found — not estimated</td></tr>`;
+app.innerHTML=`<h2>Gaming Performance</h2><div class="row">${GAMES.map(x=>`<a class="btn ${x.id===g.id?"":"s"}" href="#/games?g=${x.id}">${esc(x.name)}</a>`).join("")}</div>
+<div class="glass card scroll" style="margin-top:14px"><strong>${esc(g.name)} — requirement chipsets</strong> <span class="sm mu">(AnTuTu 11 score in brackets) · <a href="${esc(g.src)}" target="_blank" rel="noopener">game spec source</a></span><table><tr><th>Platform</th><th>Minimum</th><th>Recommended</th></tr>${req("Android",g.and)}${req("iOS",g.ios)}</table></div>
+<div class="note sm">${est()} <b>How FPS is estimated:</b> the minimum chipset is taken as 30 FPS and the recommended chipset as ${g.cap} FPS (the game's cap), scaled by AnTuTu in between and below. Chips above the recommendation show headroom (× the recommended score) and a suggested preset: Medium at 1×, High at 1.5×, Highest at 2×. Real FPS depends on thermals, settings and game updates.</div>
+<div class="row" style="margin-top:12px"><select id="gm" aria-label="Manufacturer"><option value="">All makers</option>${mfs.map(m=>`<option ${m===mf?"selected":""}>${esc(m)}</option>`).join("")}</select><span class="sm mu">${rows.length} chips</span></div>
+<div class="glass card scroll" style="margin-top:12px">${rows.map((x,i)=>`<div class="pr"><div class="pn"><span class="rk ${i<3&&!mf?"t"+(i+1):""}">${i+1}</span><a href="#/chip/${x.c.id}">${esc(x.c.name)}</a><span class="tag">${x.e.tier}</span></div><div class="pb"><i data-w="${x.e.head/mh*100}" style="--c:${PAL[i%4]};width:0"></i><b>${x.e.fps} FPS · ${x.e.head.toFixed(1)}× rec</b></div></div>`).join("")}</div>`;
+post();$("#gm").onchange=e=>goto("#/games?g="+g.id+(e.target.value?"&m="+encodeURIComponent(e.target.value):""))}
+function rank(k,n){const r=ALL.filter(b=>bkey(b)===k).sort((a,b)=>b.score-a.score).slice(0,n);if(!r.length)return"";const m=r[0].score;return r.map((b,i)=>`<div class="pr"><div class="pn"><span class="rk ${i<3?"t"+(i+1):""}">${i+1}</span><a href="#/chip/${b.chip}">${esc(byId(b.chip)?.name||b.chip)}</a></div><div class="pb"><i data-w="${b.score/m*100}" style="--c:${PAL[i%4]};width:0"></i><b>${b.score.toLocaleString()}</b></div></div>`).join("")}
+const lang=ls.get("cc_lang","en");
+const TH={"Explorer":"สำรวจชิป","Compare":"เปรียบเทียบ","Gaming":"เกม","Compare Chips.":"เปรียบเทียบชิป","Know Your Power.":"รู้พลังของคุณ",
+"Specs, AnTuTu scores and estimated phone gaming FPS from each game's requirement chipsets. Every number shows its source, and estimates are labelled.":"สเปก คะแนน AnTuTu และ FPS เกมมือถือโดยประมาณจากชิปตามสเปกขั้นต่ำ/แนะนำของแต่ละเกม ทุกตัวเลขระบุแหล่งที่มา และค่าประมาณมีป้ายกำกับ",
+"AnTuTu 11 + estimated game FPS":"AnTuTu 11 + FPS เกมโดยประมาณ","AnTuTu scores":"คะแนน AnTuTu","AnTuTu 11 — top 6":"AnTuTu 11 — 6 อันดับแรก","AnTuTu 11 Rankings":"อันดับ AnTuTu 11","AnTuTu score":"คะแนน AnTuTu","Gaming (estimated)":"เกม (ประมาณการ)","Specs":"สเปก","Gaming Performance":"ประสิทธิภาพการเล่นเกม","No AnTuTu score yet":"ยังไม่มีคะแนน AnTuTu","AnTuTu is a mobile test — n/a":"AnTuTu เป็นการทดสอบมือถือ — ไม่เกี่ยวข้อง","AnTuTu (high→low)":"AnTuTu (สูง→ต่ำ)",
+"Mobile SoCs":"ชิปมือถือ","Desktop CPUs":"ซีพียูเดสก์ท็อป","Laptop CPUs":"ซีพียูโน้ตบุ๊ก","GPUs":"การ์ดจอ","Compare chips →":"เปรียบเทียบชิป →","Recently added":"เพิ่มล่าสุด",
+"Chip Explorer":"สำรวจชิป","All categories":"ทุกหมวด","All makers":"ทุกแบรนด์","Any year":"ทุกปี","Newest":"ใหม่ล่าสุด","Name":"ชื่อ","Launch price (low→high)":"ราคาเปิดตัว (ต่ำ→สูง)","Load more":"โหลดเพิ่ม","Search…":"ค้นหา…","Search":"ค้นหา","Search chips":"ค้นหาชิป","Search a chip, brand or series…":"ค้นหาชิป แบรนด์ หรือซีรีส์…",
+"Add to comparison":"เพิ่มในการเปรียบเทียบ","Remove from comparison":"นำออกจากการเปรียบเทียบ","Clear":"ล้าง","Add one more to compare":"เพิ่มอีกหนึ่งชิปเพื่อเปรียบเทียบ","Comparison":"การเปรียบเทียบ","Copy summary":"คัดลอกสรุป","Copy share link":"คัดลอกลิงก์แชร์","+ Add chip":"+ เพิ่มชิป","Add chip":"เพิ่มชิป","Leader":"อันดับ 1","Game":"เกม",
+"Manufacturer":"ผู้ผลิต","Category":"หมวดหมู่","Release year":"ปีที่เปิดตัว","Process":"กระบวนการผลิต","Architecture":"สถาปัตยกรรม","Cores":"จำนวนคอร์","Base / boost clock":"ความเร็วพื้นฐาน / บูสต์","Cache":"แคช","Memory":"หน่วยความจำ","TDP (W)":"TDP (วัตต์)","Platform":"แพลตฟอร์ม","Minimum":"ขั้นต่ำ","Recommended":"แนะนำ","estimate":"ประมาณการ",
+"Toggle light or dark theme":"สลับธีมสว่าง/มืด","Switch language":"เปลี่ยนภาษา","Chips":"ชิป","Brands":"แบรนด์","Search chips…":"ค้นหาชิป…","Search a chip to add…":"ค้นหาชิปเพื่อเพิ่ม…","Browse explorer":"เปิดหน้าสำรวจ","launch MSRP":"ราคาเปิดตัว"};
+Object.assign(TH,{"AnTuTu PC AI score":"คะแนน AnTuTu PC AI","Not on the AnTuTu PC AI list":"ไม่อยู่ในรายการ AnTuTu PC AI"});
+const RX=[[/^(\d+) chips$/,"$1 ชิป"],[/^Compare (\d+)$/,"เปรียบเทียบ $1 ชิป"],[/^(-?[\d.]+)% vs leader$/,"$1% เทียบอันดับ 1"]];
+function applyLang(root=document.body){if(lang!=="th")return;const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;
+while(n=w.nextNode()){const t=n.nodeValue.trim();if(!t)continue;let r=TH[t];if(!r)for(const[x,y]of RX)if(x.test(t)){r=t.replace(x,y);break}if(r)n.nodeValue=n.nodeValue.replace(t,r)}
+root.querySelectorAll("[placeholder],[aria-label]").forEach(e=>["placeholder","aria-label"].forEach(a=>{const v=e.getAttribute(a);if(v&&TH[v])e.setAttribute(a,TH[v])}))}
+function post(){document.querySelectorAll(".pb i[data-w]").forEach(i=>requestAnimationFrame(()=>requestAnimationFrame(()=>{i.style.width=i.dataset.w+"%"})));applyLang()}
+/* ---- Search dropdown (shared by nav, home, compare) ---- */
+const rxe=s=>s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+function hl(s,q){let r=esc(s);q.toLowerCase().split(/\s+/).filter(Boolean).forEach(w=>{r=r.replace(new RegExp("("+rxe(esc(w))+")(?![^<]*>)","ig"),"<mark>$1</mark>")});return r}
+function ac(q,ul,pick){let list=[],ix=-1;q.setAttribute("role","combobox");q.setAttribute("aria-autocomplete","list");q.autocomplete="off";
+const opts=()=>[...ul.querySelectorAll("[role=option]")];
+const mark=()=>opts().forEach((li,i)=>{li.setAttribute("aria-selected",String(i===ix));if(i===ix)li.scrollIntoView({block:"nearest"})});
+const draw=()=>{const v=q.value.trim().toLowerCase();ix=-1;
+ if(!v){list=[];ul.hidden=true;q.setAttribute("aria-expanded","false");return}
+ list=find(v).map(c=>({c,s:c.name.toLowerCase().startsWith(v)?3:c.name.toLowerCase().includes(v)?2:1})).sort((a,b)=>b.s-a.s||b.c.year-a.c.year).slice(0,8).map(x=>x.c);
+ ul.hidden=false;q.setAttribute("aria-expanded",String(list.length>0));
+ ul.innerHTML=list.length?list.map((c,i)=>`<li role="option" data-i="${i}">${mono(c)}<span class="nm">${hl(c.name,q.value)}</span><span class="mt">${hl(c.mfr,q.value)} · ${c.year} · ${esc(c.proc)}</span><span class="ct">${esc(CATS[c.cat])}</span></li>`).join("")+'<li class="hint" aria-hidden="true">↑ ↓ navigate · Enter select · Esc close</li>':`<li class="hint empty" aria-hidden="true">No chips match “${esc(q.value.trim())}”</li>`};
+q.addEventListener("input",debounce(draw,90));
+q.addEventListener("focus",()=>{if(q.value.trim())draw()});
+q.addEventListener("keydown",e=>{if(e.key==="ArrowDown"||e.key==="ArrowUp"){e.preventDefault();if(ul.hidden)draw();const n=opts().length;if(!n)return;ix=(ix+(e.key==="ArrowDown"?1:-1)+n)%n;mark()}
+else if(e.key==="Enter"){e.preventDefault();const c=list[Math.max(ix,0)];if(c){ul.hidden=true;q.value="";q.blur();pick(c)}else if(q.value.trim())location.hash="#/explorer?q="+encodeURIComponent(q.value.trim())}else if(e.key==="Escape"){ul.hidden=true}});
+ul.addEventListener("pointerdown",e=>{const li=e.target.closest("[role=option]");if(li){e.preventDefault();ul.hidden=true;q.value="";q.blur();pick(list[li.dataset.i])}});
+ul.addEventListener("mousemove",e=>{const li=e.target.closest("[role=option]");if(li){const n=opts().indexOf(li);if(n!==ix){ix=n;mark()}}});
+q.addEventListener("blur",()=>setTimeout(()=>{ul.hidden=true},150))}
+/* star-fall background: pauses when tab hidden, static for reduced motion, off in light theme */
+(()=>{const cv=document.getElementById("stars"),cx=cv.getContext("2d");if(!cx)return;const rm=matchMedia("(prefers-reduced-motion:reduce)").matches,R=Math.random,dpr=Math.min(devicePixelRatio||1,1.5);
+let W,H,S=[],D=[],raf=0;const nw=()=>({x:R()*(W+300),y:-30-R()*H*.3,v:2+R()*3.2,l:40+R()*90,a:.35+R()*.55,r:.6+R()*1.2});
+function draw(t){cx.clearRect(0,0,W,H);const L=document.documentElement.dataset.theme==="light";cx.fillStyle=L?"#7a5af8":"#cfe6ff";
+for(const d of D){cx.globalAlpha=.3+.3*Math.sin(t/900+d.p);cx.beginPath();cx.arc(d.x,d.y,d.r,0,6.3);cx.fill()}
+if(rm)return;cx.globalAlpha=1;cx.lineCap="round";
+for(const s of S){s.x-=s.v*.45;s.y+=s.v;const k=s.l/s.v,tx=s.x+s.v*.45*k,ty=s.y-s.v*k,g=cx.createLinearGradient(s.x,s.y,tx,ty);
+g.addColorStop(0,L?"rgba(90,80,230,"+s.a*.75+")":"rgba(200,235,255,"+s.a+")");g.addColorStop(1,L?"rgba(37,99,235,0)":"rgba(92,200,255,0)");cx.strokeStyle=g;cx.lineWidth=s.r;cx.beginPath();cx.moveTo(s.x,s.y);cx.lineTo(tx,ty);cx.stroke();
+if(s.y>H+20||s.x<-60)Object.assign(s,nw())}}
+function size(){W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;cx.setTransform(dpr,0,0,dpr,0,0);
+S=Array.from({length:Math.min(40,Math.round(W/28))},()=>{const s=nw();s.y=R()*H;return s});D=Array.from({length:Math.min(90,Math.round(W/14))},()=>({x:R()*W,y:R()*H,r:R()*1.1+.3,p:R()*6}));draw(0)}
+const loop=t=>{draw(t);raf=requestAnimationFrame(loop)};size();
+if(!rm){raf=requestAnimationFrame(loop);document.addEventListener("visibilitychange",()=>{cancelAnimationFrame(raf);if(!document.hidden)raf=requestAnimationFrame(loop)})}
+addEventListener("resize",debounce(size,200))})();
+/* ---- Router ---- */
+function route(){const h=location.hash.slice(1)||"/",[path,qs]=h.split("?"),p=new URLSearchParams(qs||""),seg=path.split("/");
+document.querySelectorAll("nav a.l").forEach(a=>a.classList.toggle("on",a.getAttribute("href")==="#"+path));
+try{({"":()=>home(),explorer:()=>explorer(p),chip:()=>chip(seg[2]),compare:()=>compare(p),bench:()=>bench(p),games:()=>games(p)}[seg[1]||""]||home)()}
+catch(e){console.error(e);app.innerHTML=`<div class="note">Something went wrong rendering this page: ${esc(e.message)}. <a href="#/">Go home</a></div>`}
+window.scrollTo(0,0);tray();post()}
+addEventListener("hashchange",route);
+const th=ls.get("cc_theme","dark");document.documentElement.dataset.theme=th;
+$("#theme").onclick=()=>{const n=document.documentElement.dataset.theme==="dark"?"light":"dark";document.documentElement.dataset.theme=n;ls.set("cc_theme",n);dispatchEvent(new Event("resize"))};
+document.documentElement.lang=lang;$("#lang").textContent=lang==="th"?"EN":"TH";$("#lang").onclick=()=>{ls.set("cc_lang",lang==="th"?"en":"th");location.reload()};
+ac($("#nq"),$("#nsug"),c=>{location.hash="#/chip/"+c.id});
+route();
+</script></body></html>
